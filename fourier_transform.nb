@@ -1,0 +1,1930 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     84453,       1922]
+NotebookOptionsPosition[     79420,       1828]
+NotebookOutlinePosition[     79961,       1847]
+CellTagsIndexPosition[     79918,       1844]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Applications of Fourier Transform in Data Analysis", "Title",
+ CellChangeTimes->{{3.726710204219401*^9, 3.72671023440939*^9}},
+ FontSize->24,ExpressionUUID->"3a7b4e1b-9d71-4996-ae49-8511de48ba57"],
+
+Cell["\<\
+Fourier analysis is the foundation of frequency domain methods including the \
+more advanced methods in time-frequency analysis such as wavelets and \
+Wigner-Ville decomposition. It is hard to develop a workable understanding of \
+Fourier analysis and more advanced techniques without getting into some \
+mathematics and notations. So, the notes do contain some mathematical \
+formula. If you are not trained or not used to seeing mathematical notations \
+this might discourage you. But, I request you to be patient and persist, and \
+hopefully in the end you will most likely see that the effort was worth it. \
+These notes are not self-contained. They would make sense along with the \
+presentation slides and what I will write on board and explain in class. 
+
+This is a rich and deep field with theoretical and applied connections to a \
+variety of disciplines, and I do not claim to understand more than a small \
+part of it. But, because of this connection to a variety of fields, you are \
+likely to see a number of different notations and conventions. I will follow \
+here what I am exposed to and am comfortable with. In my slides and workshops \
+I will also point out some other notations and normalizations that you might \
+encounter. Throughout these notes I will not be concerned about finer \
+mathematical issues such as convergence and the existence of relevant \
+integrals since they can be safely ignored for our purposes. Readers \
+interested in mathematical rigor should consult appropriate textbooks. For \
+these notes, I assume that relevant mathematical objects and operations such \
+as functions, integrals or sums are well behaved and  are finite unless \
+stated otherwise. These are robust assumptions for most real life data that \
+we deal with. I have two types of data in mind - time series and images - but \
+much of what we will develop will apply to a broad class of problems. In \
+fact, sometimes it is more advantageous and productive to not think in terms \
+of time and frequency, but a more general transformation. 
+
+In data analysis, we almost always use Discrete Fourier Transform. However, \
+you can understand, apply, and interpret DFT better if you go through the \
+natural development of Fourier methods. It also helps you understand the \
+larger field of time-frequency methods better. Moreover, for us the more \
+appropriate elements of Fourier analysis are the ones that apply to random \
+processes, since in most real life cases we consider our data to be a \
+realization of a stochastic process. But, you can build deeper connections \
+and understand the key points better, if you progress from deterministic to a \
+random signal. Following this conviction, my teaching and exposition will \
+adhere to the following sequential build up:
+
+(1) Fourier Series for periodic functions
+(2) Fourier Transform for aperiodic functions
+(3) Discrete Time Fourier Transform for discrete signals
+(4) Discrete Fourier transform 
+
+I will cover Fourier analysis and random process in a follow up workshop, but \
+will highlight some elements here too. I will use the terms function and \
+signal interchangeably in the notes below.  \
+\>", "Text",
+ CellChangeTimes->{
+  3.7275298296212673`*^9, {3.7275345509660797`*^9, 3.727534557508603*^9}, {
+   3.7275346743143263`*^9, 3.7275347389690742`*^9}, {3.7275360501447773`*^9, 
+   3.7275360510884857`*^9}, {3.727633024977103*^9, 3.7276330260532637`*^9}, {
+   3.727713667950886*^9, 3.727713727943995*^9}, {3.727878555988144*^9, 
+   3.7278785968746643`*^9}, {3.7280450993308983`*^9, 3.72804518394742*^9}, {
+   3.7280453345465603`*^9, 3.7280453568471403`*^9}, {3.7282170595093737`*^9, 
+   3.728217114204256*^9}, {3.7282276865189962`*^9, 3.728227686946014*^9}, 
+   3.728649080617992*^9, {3.728664222837927*^9, 3.728664291139598*^9}, {
+   3.728666258661497*^9, 3.728666492569297*^9}, {3.728752491599183*^9, 
+   3.7287525557306433`*^9}, {3.7287526797528477`*^9, 3.728752702247547*^9}, {
+   3.728783774150275*^9, 3.728783791716936*^9}, {3.785010987923787*^9, 
+   3.7850110919298687`*^9}, 3.785011134836342*^9},
+ FontSize->24,ExpressionUUID->"3271327b-db70-49cc-9672-083e14ea2778"],
+
+Cell[CellGroupData[{
+
+Cell["1. Preliminaries", "Chapter",
+ CellChangeTimes->{{3.7275298661497593`*^9, 3.7275298984523287`*^9}},
+ FontSize->24,ExpressionUUID->"67bb774f-4f96-45e4-94f7-2eca96ef19da"],
+
+Cell["\<\
+Let us first go through some of the building blocks that we will need in \
+developing Fourier analysis. This is the material covered in the very first \
+lectures in high school mathematics and early courses in calculus and liner \
+algebra. 
+
+It is possible to cover Fourier analysis without going into the domain of \
+complex numbers. However, software implementation of Discrete Fourier \
+Transform almost always returns results in complex quantities. Therefore, you \
+cannot avoid complex numbers when using Fourier approaches in data analysis. \
+\
+\>", "Text",
+ CellChangeTimes->{{3.727534589625628*^9, 3.727534666623248*^9}, {
+  3.727534747470152*^9, 3.727534852476013*^9}, {3.7275396143350687`*^9, 
+  3.727539799279953*^9}, {3.7276330610004673`*^9, 3.727633070552012*^9}, {
+  3.7280451965041313`*^9, 3.728045196960005*^9}, {3.78501116583922*^9, 
+  3.7850111661029043`*^9}},
+ FontSize->24,ExpressionUUID->"3e5bf3e3-a4a3-44c2-8367-a1f301cfd133"],
+
+Cell[CellGroupData[{
+
+Cell["1.1 Trigonometric functions", "Section",
+ CellChangeTimes->{{3.726710416698841*^9, 3.726710466915511*^9}, 
+   3.726932335460902*^9, {3.727534582580223*^9, 3.727534583928928*^9}},
+ FontSize->24,ExpressionUUID->"94228a9b-47ab-4e9f-980a-1231f5c3f276"],
+
+Cell["\<\
+Recall that sines and cosines are smooth, bounded, and periodic functions. \
+Their values vary between -1 and 1 and are 2Pi periodic. Let us see how their \
+behaviour depends on their main parameters. Play around with the code below \
+and understand how the behavior of the function changes. \
+\>", "Text",
+ CellChangeTimes->{{3.726932494210225*^9, 3.7269326536105747`*^9}, {
+   3.726933086531496*^9, 3.726933121057852*^9}, {3.726933771173153*^9, 
+   3.7269337750109377`*^9}, {3.7275348661397038`*^9, 3.72753492323493*^9}, {
+   3.727535035828842*^9, 3.727535045361438*^9}, {3.728052040047428*^9, 
+   3.7280520410550213`*^9}, {3.728166905742714*^9, 3.72816691147451*^9}, {
+   3.728480780052546*^9, 3.728480786756235*^9}, {3.728820423049739*^9, 
+   3.728820432024994*^9}, 3.785011193886696*^9},
+ FontSize->24,ExpressionUUID->"337620cb-842f-4b5a-b8eb-16bcc0c3be90"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Manipulate", "[", 
+  RowBox[{
+   RowBox[{"Plot", "[", 
+    RowBox[{
+     RowBox[{"Sin", "[", 
+      RowBox[{"x", "*", "n"}], "]"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"x", ",", " ", "0", ",", " ", 
+       RowBox[{"6", "*", "Pi"}]}], "}"}], ",", " ", 
+     RowBox[{"PlotRange", " ", "->", " ", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", " ", "20"}], "}"}], ",", " ", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "1.1"}], ",", " ", "1.1"}], "}"}]}], "}"}]}], ",", " ", 
+     RowBox[{"Ticks", " ", "->", " ", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", " ", "Pi", ",", " ", 
+          RowBox[{"2", " ", "Pi"}], ",", " ", 
+          RowBox[{"3", " ", "Pi"}], ",", " ", 
+          RowBox[{"4", " ", "Pi"}], ",", " ", 
+          RowBox[{"5", " ", "Pi"}], ",", " ", 
+          RowBox[{"6", " ", "Pi"}]}], "}"}], ",", " ", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "1"}], ",", " ", 
+          RowBox[{"-", "0.5"}], ",", " ", "0", ",", " ", "0.5", ",", " ", 
+          "1"}], "}"}]}], "}"}]}]}], "]"}], ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"n", ",", " ", "1", ",", " ", "10", ",", "1"}], "}"}]}], 
+  "]"}]], "Code",
+ CellChangeTimes->{{3.726708830425394*^9, 3.7267088860056963`*^9}, {
+   3.726708959579544*^9, 3.726709035048881*^9}, {3.726709067568681*^9, 
+   3.726709125114828*^9}, {3.726709200532946*^9, 3.726709212507175*^9}, {
+   3.72670924932274*^9, 3.726709355855445*^9}, {3.726709454348289*^9, 
+   3.726709465802301*^9}, {3.726709535878586*^9, 3.726709613704172*^9}, {
+   3.726709646820506*^9, 3.726709647698473*^9}, {3.726709955760401*^9, 
+   3.72670999964662*^9}, {3.726710041046194*^9, 3.726710090708349*^9}, 
+   3.726710136990575*^9, 3.7275296669384413`*^9, 3.727537000541342*^9, {
+   3.7275370763025293`*^9, 3.727537076305258*^9}, {3.727540291210125*^9, 
+   3.727540292415434*^9}, {3.728486483388001*^9, 3.728486497081181*^9}, {
+   3.728486679275713*^9, 3.728486679521124*^9}},
+ FontSize->24,ExpressionUUID->"32224db1-a7d3-420b-938e-51ca842b8729"],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`n$$ = 4, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{
+      Hold[$CellContext`n$$], 1, 10, 1}}, Typeset`size$$ = {
+    360., {102., 107.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
+    Typeset`skipInitDone$$ = True, $CellContext`n$4710$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, "Variables" :> {$CellContext`n$$ = 1}, 
+      "ControllerVariables" :> {
+        Hold[$CellContext`n$$, $CellContext`n$4710$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, "Body" :> Plot[
+        Sin[$CellContext`x $CellContext`n$$], {$CellContext`x, 0, 6 Pi}, 
+        PlotRange -> {{0, 20}, {-1.1, 1.1}}, 
+        Ticks -> {{
+          0, Pi, 2 Pi, 3 Pi, 4 Pi, 5 Pi, 6 Pi}, {-1, -0.5, 0, 0.5, 1}}], 
+      "Specifications" :> {{$CellContext`n$$, 1, 10, 1}}, "Options" :> {}, 
+      "DefaultOptions" :> {}],
+     ImageSizeCache->{405., {147., 153.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{
+  3.7288226096027718`*^9},ExpressionUUID->"5cf886d4-9e3c-4ee8-bd7c-\
+7924fd36dcca"]
+}, Open  ]],
+
+Cell["\<\
+Now let us express sines and cosines in a form that is going to be useful for \
+our purposes. We would like to clearly identify three parameters - amplitude, \
+frequency, and phase - that influence the characteristics of these functions. \
+In the function y = A*Sin[2\[Pi] *f *x+ \[Theta]], A is amplitude, f is \
+frequency, and \[Theta] is phase. To keep things simple and also because it \
+is going to be useful later assume that f (frequency) can only take integer \
+values. \
+\>", "Text",
+ CellChangeTimes->{{3.726710503158601*^9, 3.726710588203991*^9}, {
+  3.726933167032453*^9, 3.7269333541700277`*^9}, {3.72693380429751*^9, 
+  3.726933811897163*^9}, {3.7271013801210337`*^9, 3.727101422562747*^9}, {
+  3.727101484909861*^9, 3.727101485932404*^9}, {3.727131523213148*^9, 
+  3.727131526225914*^9}, {3.728480815420937*^9, 3.7284808378517647`*^9}},
+ FontSize->24,ExpressionUUID->"55f27014-51fe-477d-8692-7b8212cfa3a3"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Manipulate", "[", 
+  RowBox[{
+   RowBox[{"Plot", "[", 
+    RowBox[{
+     RowBox[{"A", "*", 
+      RowBox[{"Sin", "[", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"2", " ", 
+           RowBox[{"Pi", "/", "100"}]}], ")"}], "*", "n", "*", "t"}], " ", 
+        "+", " ", "\[Theta]"}], "]"}]}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"t", ",", " ", "0", ",", " ", "100"}], "}"}], ",", " ", 
+     RowBox[{"PlotRange", " ", "->", " ", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"0", ",", " ", "100"}], "}"}], ",", " ", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"-", "10"}], ",", " ", "10"}], "}"}]}], "}"}]}]}], "]"}], 
+   ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"A", ",", " ", "1", ",", " ", "10", ",", " ", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}], ",", " ", 
+   
+   RowBox[{"{", 
+    RowBox[{"n", ",", " ", "1", ",", " ", "10", ",", "1", ",", " ", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}], ",", " ", 
+   
+   RowBox[{"{", 
+    RowBox[{"\[Theta]", ",", " ", "0", ",", " ", "Pi", ",", " ", 
+     RowBox[{"Pi", "/", "4"}], ",", " ", 
+     RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}]}], 
+  "]"}]], "Code",
+ CellChangeTimes->{{3.726708830425394*^9, 3.7267088860056963`*^9}, {
+   3.726708959579544*^9, 3.726709035048881*^9}, {3.726709067568681*^9, 
+   3.726709125114828*^9}, {3.726709200532946*^9, 3.726709212507175*^9}, {
+   3.72670924932274*^9, 3.726709355855445*^9}, {3.726709454348289*^9, 
+   3.726709465802301*^9}, {3.726709535878586*^9, 3.726709613704172*^9}, {
+   3.726709646820506*^9, 3.726709647698473*^9}, {3.726709955760401*^9, 
+   3.72670999964662*^9}, {3.726710041046194*^9, 3.726710090708349*^9}, 
+   3.726710136990575*^9, {3.727101429627589*^9, 3.727101462077404*^9}, {
+   3.727101494559969*^9, 3.727101588653101*^9}, {3.727131548215434*^9, 
+   3.727131595228941*^9}, {3.727131645366383*^9, 3.727131647693102*^9}, {
+   3.727131693315981*^9, 3.727131748234372*^9}, {3.727131780129651*^9, 
+   3.7271317874565153`*^9}, {3.7271318229532948`*^9, 3.727131851795006*^9}, {
+   3.727131895840554*^9, 3.727131897022641*^9}, {3.727298356510909*^9, 
+   3.7272983578845673`*^9}, 3.7273142142881927`*^9, 3.727529636539226*^9, {
+   3.7284874577456636`*^9, 3.728487457746811*^9}, {3.728487817774776*^9, 
+   3.728487848506977*^9}, {3.7284879549475718`*^9, 3.728487988056858*^9}, {
+   3.728488037163714*^9, 3.728488088330886*^9}, {3.72848813957552*^9, 
+   3.728488142733733*^9}, {3.7284881863495693`*^9, 3.7284881867880163`*^9}},
+ FontSize->24,ExpressionUUID->"56a3ecd7-9950-4b1d-adf7-873d7b5b333c"],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`A$$ = 1, $CellContext`n$$ = 
+    1, $CellContext`\[Theta]$$ = 0, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{
+      Hold[$CellContext`A$$], 1, 10}, {
+      Hold[$CellContext`n$$], 1, 10, 1}, {
+      Hold[$CellContext`\[Theta]$$], 0, Pi, Rational[1, 4] Pi}}, 
+    Typeset`size$$ = {360., {104., 114.}}, Typeset`update$$ = 0, 
+    Typeset`initDone$$, Typeset`skipInitDone$$ = True, $CellContext`A$7005$$ =
+     0, $CellContext`n$7006$$ = 0, $CellContext`\[Theta]$7007$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, 
+      "Variables" :> {$CellContext`A$$ = 1, $CellContext`n$$ = 
+        1, $CellContext`\[Theta]$$ = 0}, "ControllerVariables" :> {
+        Hold[$CellContext`A$$, $CellContext`A$7005$$, 0], 
+        Hold[$CellContext`n$$, $CellContext`n$7006$$, 0], 
+        Hold[$CellContext`\[Theta]$$, $CellContext`\[Theta]$7007$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, "Body" :> 
+      Plot[$CellContext`A$$ 
+        Sin[((2 (Pi/
+              100)) $CellContext`n$$) $CellContext`t + \
+$CellContext`\[Theta]$$], {$CellContext`t, 0, 100}, 
+        PlotRange -> {{0, 100}, {-10, 10}}], 
+      "Specifications" :> {{$CellContext`A$$, 1, 10, Appearance -> 
+         "Labeled"}, {$CellContext`n$$, 1, 10, 1, Appearance -> 
+         "Labeled"}, {$CellContext`\[Theta]$$, 0, Pi, Rational[1, 4] Pi, 
+         Appearance -> "Labeled"}}, "Options" :> {}, "DefaultOptions" :> {}],
+     ImageSizeCache->{411., {190., 201.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{
+  3.728487991258404*^9, 3.728488048000893*^9, {3.7284880781204243`*^9, 
+   3.7284880895157127`*^9}, 3.72848814370542*^9, 3.7284881878342953`*^9, 
+   3.728824299914701*^9},
+ FontSize->24,ExpressionUUID->"cf506569-b382-45dd-b58b-bc01557cd38c"]
+}, Open  ]],
+
+Cell["\<\
+Change each of the three parameters above and observe the behaviour of the \
+function. Please spend a few minutes to remind yourself the effect of each of \
+the three parameters. We would often interchange between frequency and period \
+of a signal or function. You can think of frequency as the number of cycles \
+per unit time or in terms of angular frequency as radians per unit time. We \
+may use either, and it would be clear from the context whether we are using \
+Hertz (cycles per unit time) or radians per unit time. The period of a signal \
+is the time in which it repeats itself. So,  f (frequency) and T (period) are \
+related with each other via f = 2*Pi/T. I want to again highlight here that \
+most of the time we will talk in terms of time as our independent variable. \
+However, this perspective can stop you from utilizing the power of the \
+Fourier analysis in different contexts. So, I encourage you to think of time \
+as any arbitrary continuous domain.  
+\
+\>", "Text",
+ CellChangeTimes->{{3.72713195803985*^9, 3.727132029082261*^9}, {
+  3.7271321111435537`*^9, 3.727132125068008*^9}, {3.727297826007699*^9, 
+  3.7272978561148767`*^9}, {3.727372521180153*^9, 3.7273727293938437`*^9}, {
+  3.727372765546221*^9, 3.727372946902275*^9}, {3.728128974266945*^9, 
+  3.728129026738716*^9}, {3.728820524638308*^9, 3.72882058611943*^9}, {
+  3.785011239831564*^9, 3.785011326453784*^9}},
+ FontSize->24,ExpressionUUID->"a0d9f87c-506b-49f7-8882-74c64152c55b"],
+
+Cell[TextData[{
+ "Now let us see what happens if we linearly combine two or more sines and \
+cosines and vary their parameters. We start with two. ",
+ StyleBox["I cannot emphasize the importance of this step - the core idea of \
+Fourier decomposition is in this step",
+  FontWeight->"Bold"],
+ ". So, spend some time playing around with this. Try mixing high frequencies \
+with low frequencies and see the effect. "
+}], "Text",
+ CellChangeTimes->{{3.727297880535041*^9, 3.7272979132050743`*^9}, {
+   3.7281704368980703`*^9, 3.728170495180501*^9}, {3.728436887865901*^9, 
+   3.728436925301594*^9}, {3.728488444417635*^9, 3.728488459295805*^9}, {
+   3.728488615034971*^9, 3.7284886340624866`*^9}, {3.728489117411903*^9, 
+   3.7284891256785927`*^9}, 3.72848915709475*^9, {3.7286488199774647`*^9, 
+   3.728648827109198*^9}},
+ FontSize->24,ExpressionUUID->"53c4665d-d304-405f-89d4-7a57332d6bcb"],
+
+Cell["\<\
+Manipulate[Plot[A1*Sin[2 Pi*f1*t + \[Theta]1] + A2*Sin[2 Pi*f2*t + \
+\[Theta]2], {t, -50, 50}, PlotRange -> {{-50, 50}, {-10, 10}}], {A1, 1, 10}, \
+{f1, 0.01, 1}, {\[Theta]1, 0, 2*Pi}, {A2, 1, 10}, {f2, 0.01, 1}, {\[Theta]2, \
+0, 2*Pi}]\
+\>", "Input",
+ CellChangeTimes->{{3.726708830425394*^9, 3.7267088860056963`*^9}, {
+   3.726708959579544*^9, 3.726709035048881*^9}, {3.726709067568681*^9, 
+   3.726709125114828*^9}, {3.726709200532946*^9, 3.726709212507175*^9}, {
+   3.72670924932274*^9, 3.726709355855445*^9}, {3.726709454348289*^9, 
+   3.726709465802301*^9}, {3.726709535878586*^9, 3.726709613704172*^9}, {
+   3.726709646820506*^9, 3.726709647698473*^9}, {3.726709955760401*^9, 
+   3.72670999964662*^9}, {3.726710041046194*^9, 3.726710090708349*^9}, 
+   3.726710136990575*^9, {3.727101429627589*^9, 3.727101462077404*^9}, {
+   3.727101494559969*^9, 3.727101588653101*^9}, {3.727131548215434*^9, 
+   3.727131595228941*^9}, {3.727131645366383*^9, 3.727131647693102*^9}, {
+   3.727131693315981*^9, 3.727131748234372*^9}, {3.727131780129651*^9, 
+   3.7271317874565153`*^9}, {3.7271318229532948`*^9, 3.727131851795006*^9}, {
+   3.727131895840554*^9, 3.727131897022641*^9}, {3.727298356510909*^9, 
+   3.7272983578845673`*^9}, {3.7273142142881927`*^9, 3.7273143366015577`*^9}, 
+   3.727314377055708*^9, 3.727529690802721*^9},
+ FontSize->24,ExpressionUUID->"193205ee-d6bb-49c2-9ead-39874fdb357d"],
+
+Cell["\<\
+Use any other software you are more comfortable with e.g. use \
+\[OpenCurlyQuote]fplot\[CloseCurlyQuote] in Matlab. Try the following in \
+Matlab: fplot (@(x) 10*cos(x)+sin(4*x)+0.2*sin(20*x)-0.2*cos(60*x)). Once you \
+have developed some intuition try to plot 2-D sine and cosine wave \
+fsurf(@(x,y) 10*sin(x+y) + .25*sin(50*x) + 3*cos(4*x) + 4*sin(3*x)). 
+
+You can see from the figure above that the periodicities get hidden in the \
+combined curve. You can try combining three or more sinusoidal and see how \
+quickly the resultant function can take complex shapes. If you spend \
+sufficient time playing around with it, you will begin to wonder if it is \
+possible to approximate any function by combining a sufficient number of \
+sinusoidal. 
+
+You can reverse this idea and ask, given a signal, can you decompose it into \
+a linear combination of sines and cosines. If you can, you might be able to \
+discover hidden \[OpenCurlyDoubleQuote]periodicities\[CloseCurlyDoubleQuote]  \
+in your signal. That is what Fourier analysis tries to do. I want to \
+emphasize here that a mathematical decomposition of a function in terms of \
+hidden \[OpenCurlyQuote]periodicities\[CloseCurlyQuote] does not tell you if \
+those periodicities have a physical or biological or some other context \
+specific meaning. That requires you to bring domain knowledge to the \
+interpretation. \
+\>", "Text",
+ CellChangeTimes->{{3.727373085021903*^9, 3.727373261047348*^9}, {
+   3.727373653224124*^9, 3.727373694356036*^9}, {3.727373759491798*^9, 
+   3.727374093100306*^9}, {3.727374636482368*^9, 3.7273746955481577`*^9}, {
+   3.727374726978052*^9, 3.727374752440372*^9}, {3.727794343044814*^9, 
+   3.7277943566529083`*^9}, {3.727794427406755*^9, 3.727794446991621*^9}, {
+   3.728216831906334*^9, 3.7282168360281363`*^9}, {3.7284369492688503`*^9, 
+   3.728436989889637*^9}, {3.728489160807988*^9, 3.728489165925655*^9}, 
+   3.728503265958942*^9, {3.728820609227642*^9, 3.7288206538180723`*^9}, {
+   3.728820697999134*^9, 3.7288207222236233`*^9}},
+ FontSize->24,ExpressionUUID->"b2c0d713-c8ea-449f-a1bd-2b40a459baea"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["1.2 Orthogonality, inner product, and basis", "Section",
+ CellChangeTimes->{{3.7272982899801064`*^9, 3.727298314965279*^9}, {
+  3.7275361595820017`*^9, 3.727536188938819*^9}, {3.728481411924138*^9, 
+  3.7284814196351557`*^9}},
+ FontSize->24,ExpressionUUID->"4328c081-1be5-4b82-a735-5279d64a08db"],
+
+Cell[TextData[{
+ "Let us motivate the topic of orthogonality with an idea that we are quite \
+familiar with from high school geometry: representing vectors with orthogonal \
+basis. Orthogonal is just a fancy word for perpendicular, but I will use it \
+more often than perpendicular because it is commonly used in the literature. \
+Consider a three dimensional vector space \[ScriptCapitalS]. Mark an \
+arbitrary direction in the space with a vector X, then trace a vector Y that \
+is orthogonal to X, and finally draw Z that is orthogonal to both X and Y. \
+The three vectors [X, Y, Z] form an orthogonal basis of the three-dimensional \
+space. Without loss of generality and to make computation easy we can create \
+three unit vectors that form an orthonormal basis of the space S.  Let us \
+denote this orthonormal basis with unit vectors [x, y, z] that satisfies the \
+following two conditions.  \n\n(1) The three vectors are perpendicular to or \
+linearly independent from each other. This means that the inner product of \
+any two of these is zero and thus we cannot express one as a linear \
+combination of the other two. Geometrically, dot product is the projection of \
+one vector on to another. For perpendicular vectors this projection is zero \
+since cos\[CurlyPhi] is zero. \n\n(2) Any vector n in the space \
+\[ScriptCapitalS] can be expressed as a linear combination of vectors [x, y, \
+z]  such that \n\nn = a*x + b*y + c*z\n\nwhere a, b, and c are scalars and \
+are in the set of real numbers. With this linear sum in mind, we can \
+represent any vector n as a triplet (a, b, c) and the inner product between \
+any two vectors a (a1, b1, c1) and b (a2, b2, c2) can be defined as \n\:f35f\n\
+a.b = a1*a2 + b1*b2 + c1*c2\n\nFor n-dimensional vectors a1 and b1 the dot \
+(or inner) product is defined as \n\na1.b1 = ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    UnderoverscriptBox["\[Sum]", 
+     RowBox[{"j", "=", "1"}], "n"], 
+    SubscriptBox["a", "j"]}], TraditionalForm]],ExpressionUUID->
+  "ddc72834-8f21-4cc5-8967-a8f6c15c7c7d"],
+ "*",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["b", "j"], TraditionalForm]],ExpressionUUID->
+  "e383b61b-fcdc-4be8-a8c4-bfeb28cefe8b"],
+ "\n\nNote that  \n\nx.y = 1.0+ 0.1+0.0=0 and similarly, x.z = y.z = 0. \
+Moreover x.x = 1.1+0.0+0.0 = 1 and similarly, y.y = z.z = 1\n\nWe can extend \
+the idea of inner product and orthogonality to functions. The inner product \
+between two functions f and g  in domain [t1, t2] is defined as (replace sum \
+by integral)\n\n\[LeftAngleBracket]\[ScriptF].\[ScriptG]\[RightAngleBracket] \
+= ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", "t1", "t2"], 
+    RowBox[{
+     RowBox[{"f", "(", "t", ")"}], 
+     RowBox[{"g", "(", "t", ")"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "fbb33225-5318-4f13-954b-f0ba1bc72b26"],
+ "\n\nWhat does it mean for two functions to be orthogonal to each other. \
+Extending the idea in (1) above in the context of vectors, we say that two \
+functions are orthogonal to each other if their inner product defined as \
+above is zero. \n\nLet us look at the relationship of sinusoids with each \
+other in terms of inner product for a single period where the frequency of \
+each sinusoid is an integer multiple of the base frequency (we might also \
+refer to these as harmonics). To do so, calculate the following integrals\n\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"(", "1", ")"}], " ", 
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", "0", 
+      RowBox[{"2", "Pi"}]], 
+     RowBox[{"sinx", "*", 
+      RowBox[{"cos", "(", 
+       RowBox[{"n", "*", "x"}], ")"}], 
+      RowBox[{"\[DifferentialD]", "x"}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"5089cc3b-36d0-4b1b-afe4-3177d10d50f6"],
+ "  for different values of \[OpenCurlyQuote]n\[CloseCurlyQuote], where n is \
+an integer. Similarly, try ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"(", "2", ")"}], " ", 
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", "0", 
+      RowBox[{"2", "Pi"}]], 
+     RowBox[{"sinx", "*", 
+      RowBox[{"sin", "(", 
+       RowBox[{"n", "*", "x"}], ")"}], 
+      RowBox[{"\[DifferentialD]", "x"}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"0dbf1cc1-6eae-43d3-9796-95e9000edd78"],
+ ". I will let Mathematica do the calculation for us. Change  n (which takes \
+integer values) and see the values of integral. Notice than all integrals are \
+equal to zero except for Sin[n*x]*Sin[n*x] and Cos[n*x]*Cos[n*x]. "
+}], "Text",
+ CellChangeTimes->{
+  3.727530239165224*^9, {3.727535936145404*^9, 3.7275359403015337`*^9}, {
+   3.727535980756742*^9, 3.727535991692733*^9}, {3.727536207012632*^9, 
+   3.7275362074582157`*^9}, {3.727536356488654*^9, 3.727536445468055*^9}, {
+   3.727536514196849*^9, 3.7275365890493593`*^9}, {3.727536761760274*^9, 
+   3.727536834740972*^9}, {3.727537088090331*^9, 3.727537358307822*^9}, {
+   3.727540090291107*^9, 3.727540090763389*^9}, {3.727540123364224*^9, 
+   3.727540129089148*^9}, {3.727540175010662*^9, 3.7275402037132463`*^9}, {
+   3.727544297392571*^9, 3.7275443228511343`*^9}, {3.7275445334476223`*^9, 
+   3.727544562480258*^9}, {3.727556287967907*^9, 3.727556375825077*^9}, {
+   3.727556442072652*^9, 3.727556456527645*^9}, {3.727556519412364*^9, 
+   3.727556534725863*^9}, {3.72755659788522*^9, 3.727556633253289*^9}, {
+   3.727633108844367*^9, 3.727633118006236*^9}, {3.727700508812744*^9, 
+   3.7277005357597103`*^9}, {3.727702477827977*^9, 3.7277026302359123`*^9}, {
+   3.727703124030581*^9, 3.727703125666133*^9}, {3.727703201113316*^9, 
+   3.7277032726439257`*^9}, {3.727703795686726*^9, 3.727703828069758*^9}, {
+   3.727704159391099*^9, 3.7277042096508512`*^9}, {3.7277043017421513`*^9, 
+   3.727704321963502*^9}, {3.7277945110068827`*^9, 3.727794548996315*^9}, {
+   3.727794581514377*^9, 3.7277945833616037`*^9}, {3.7277947853079233`*^9, 
+   3.727794792410454*^9}, {3.727794822655629*^9, 3.727794888996364*^9}, {
+   3.727794919712015*^9, 3.7277950415055227`*^9}, 3.7277950903222923`*^9, {
+   3.7280454341228523`*^9, 3.728045446801791*^9}, {3.728045552427861*^9, 
+   3.7280455849193897`*^9}, {3.7280520128181143`*^9, 3.728052012818328*^9}, {
+   3.7281290714661922`*^9, 3.7281290716162786`*^9}, {3.728166925107304*^9, 
+   3.7281670166120567`*^9}, {3.728167078536777*^9, 3.72816719600366*^9}, {
+   3.72847799427057*^9, 3.7284780067626553`*^9}, 3.728478060933527*^9, {
+   3.728478450835795*^9, 3.7284784513157167`*^9}, {3.728478499865911*^9, 
+   3.728478529294957*^9}, {3.728478904871152*^9, 3.7284789206193857`*^9}, {
+   3.7284789517743807`*^9, 3.728479013520873*^9}, {3.728479084954402*^9, 
+   3.728479140350933*^9}, {3.728480669155846*^9, 3.728480681080673*^9}, {
+   3.728480887898818*^9, 3.728480893815948*^9}, {3.728481259068573*^9, 
+   3.7284813679286213`*^9}, {3.728664340692919*^9, 3.7286644047724257`*^9}},
+ FontSize->24,ExpressionUUID->"7c70794c-c360-4725-821e-068cf73e8016"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Integrate", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Sin", "[", "x", "]"}], 
+    RowBox[{"Cos", "[", 
+     RowBox[{"3", "*", "x"}], "]"}]}], ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", " ", "0", ",", " ", 
+     RowBox[{"2", "*", "Pi"}]}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.727544337892344*^9, 3.727544372776229*^9}, {
+  3.727711906474921*^9, 3.727711913697824*^9}, {3.728051964748075*^9, 
+  3.7280520024646873`*^9}, {3.728052129064601*^9, 3.728052154300281*^9}, {
+  3.728166299907999*^9, 3.728166384683168*^9}, {3.7287332422436323`*^9, 
+  3.7287332695793343`*^9}},
+ FontSize->24,ExpressionUUID->"90cc711d-40ea-49c6-b024-87a78427000a"],
+
+Cell[BoxData["0.05338137289060513`"], "Output",
+ CellChangeTimes->{
+  3.72754437389961*^9, 3.7277119160012207`*^9, {3.72805197143222*^9, 
+   3.728052003601646*^9}, {3.72805213541916*^9, 3.7280521553651237`*^9}, {
+   3.7281662911047583`*^9, 3.728166385894432*^9}, {3.7287332445019703`*^9, 
+   3.728733249033059*^9}},
+ FontSize->24,ExpressionUUID->"33a70ae9-2933-4ea2-bb5c-dd0307104b8d"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Integrate", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Sin", "[", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"2", 
+        RowBox[{"Pi", "/", 
+         RowBox[{"(", "T", ")"}]}]}], ")"}], "x"}], "]"}], 
+    RowBox[{"Sin", "[", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"2", 
+        RowBox[{"Pi", "/", 
+         RowBox[{"(", "T", ")"}]}]}], ")"}], "*", "x"}], "]"}]}], ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", " ", "0", ",", " ", "T"}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.7281670337633667`*^9, 3.72816703845888*^9}, {
+  3.728167559470892*^9, 3.728167559628455*^9}, {3.728652234813393*^9, 
+  3.728652244561442*^9}, {3.728732566693874*^9, 3.728732616488285*^9}, {
+  3.728733168617229*^9, 3.728733208421063*^9}, {3.728733274603903*^9, 
+  3.728733286314732*^9}, {3.7287333165302277`*^9, 3.728733316970519*^9}, {
+  3.728733746483574*^9, 3.728733812792714*^9}, {3.728733857985014*^9, 
+  3.728733859087367*^9}},
+ FontSize->24,ExpressionUUID->"a7e4e485-28e5-412e-bd12-d5ea3e713733"],
+
+Cell[BoxData[
+ FractionBox["T", "2"]], "Output",
+ CellChangeTimes->{
+  3.7281670414074717`*^9, 3.72865223805709*^9, 3.728652359434387*^9, {
+   3.728732622261971*^9, 3.728732626422505*^9}, {3.728733174188466*^9, 
+   3.728733209526349*^9}, 3.7287333185577583`*^9, {3.728733751002964*^9, 
+   3.728733788140624*^9}, 3.728733860545476*^9},
+ FontSize->24,ExpressionUUID->"9eb04e1f-2fbf-4b52-bf82-a79dc7e1e1b4"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Integrate", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Sin", "[", 
+     RowBox[{"5", "x"}], "]"}], 
+    RowBox[{"Sin", "[", 
+     RowBox[{"6", "x"}], "]"}]}], ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", " ", "Pi", ",", " ", 
+     RowBox[{"20", "Pi"}]}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.7286491142912207`*^9, 3.728649146010116*^9}, {
+  3.728652309451523*^9, 3.728652319942882*^9}, {3.728652414822527*^9, 
+  3.728652430634345*^9}},
+ FontSize->24,ExpressionUUID->"0d24be5e-f7ea-44f3-acac-2b683477dfac"],
+
+Cell[BoxData["0"], "Output",
+ CellChangeTimes->{3.728649147089076*^9, 3.728652320569706*^9, 
+  3.728652418052247*^9, 3.7287332920454607`*^9},
+ FontSize->24,ExpressionUUID->"86b22efe-4eda-4519-96b4-7e899bc1e915"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Integrate", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Cos", "[", 
+     RowBox[{"5", "*", "x"}], "]"}], 
+    RowBox[{"Cos", "[", 
+     RowBox[{"5", "*", "x"}], "]"}]}], ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"x", ",", " ", "Pi", ",", " ", 
+     RowBox[{"3", "*", "Pi"}]}], "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.728167052811051*^9, 3.7281670632507277`*^9}, {
+   3.728167563660042*^9, 3.728167581180471*^9}, {3.7281676163111897`*^9, 
+   3.728167617582487*^9}, {3.728478032289155*^9, 3.728478033872439*^9}, {
+   3.7284781033867607`*^9, 3.728478103545899*^9}, {3.7284781387515507`*^9, 
+   3.72847818891278*^9}, 3.728478220649085*^9, {3.728482498926977*^9, 
+   3.728482500629985*^9}, {3.728652280949525*^9, 3.728652295461447*^9}, 
+   3.728652372601556*^9, {3.728652405973795*^9, 3.7286524096448507`*^9}},
+ FontSize->24,ExpressionUUID->"5c705f32-71e5-454d-b698-000f8b4b63d1"],
+
+Cell[BoxData["\[Pi]"], "Output",
+ CellChangeTimes->{
+  3.728167066013323*^9, 3.728167583138246*^9, 3.7281676187464314`*^9, 
+   3.728478035076969*^9, 3.728478104372653*^9, {3.728478143233924*^9, 
+   3.72847815560217*^9}, 3.7284781912952633`*^9, 3.728482501533889*^9, {
+   3.7286522899425173`*^9, 3.728652296878244*^9}, 3.7286523746161747`*^9, 
+   3.728652410250575*^9, 3.728733297994382*^9},
+ FontSize->24,ExpressionUUID->"93f2388c-cc95-4459-a35d-ca903cbe116a"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Manipulate", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"f", "=", 
+      RowBox[{"Switch", "[", 
+       RowBox[{"choice", ",", "\[IndentingNewLine]", "1", ",", 
+        RowBox[{
+         RowBox[{"Sin", "[", 
+          RowBox[{"m", " ", "\[Pi]", " ", "x"}], "]"}], 
+         RowBox[{"Sin", "[", 
+          RowBox[{"n", " ", "\[Pi]", " ", "x"}], "]"}]}], ",", 
+        "\[IndentingNewLine]", "2", ",", 
+        RowBox[{
+         RowBox[{"Cos", "[", 
+          RowBox[{"m", " ", "\[Pi]", " ", "x"}], "]"}], 
+         RowBox[{"Cos", "[", 
+          RowBox[{"n", " ", "\[Pi]", " ", "x"}], "]"}]}], ",", 
+        "\[IndentingNewLine]", "3", ",", 
+        RowBox[{
+         RowBox[{"Sin", "[", 
+          RowBox[{"m", " ", "\[Pi]", " ", "x"}], "]"}], 
+         RowBox[{"Cos", "[", 
+          RowBox[{"n", " ", "\[Pi]", " ", "x"}], "]"}]}]}], 
+       "\[IndentingNewLine]", "]"}]}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Plot", "[", 
+      RowBox[{"f", ",", 
+       RowBox[{"{", 
+        RowBox[{"x", ",", 
+         RowBox[{"-", "1"}], ",", "1"}], "}"}], ",", 
+       RowBox[{"PlotStyle", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"Thick", ",", 
+          RowBox[{"RGBColor", "[", 
+           RowBox[{".88", ",", ".63", ",", ".23"}], "]"}]}], "}"}]}], ",", 
+       RowBox[{"Filling", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"1", "\[Rule]", 
+          RowBox[{"{", 
+           RowBox[{"Axis", ",", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"RGBColor", "[", 
+               RowBox[{".6", ",", ".73", ",", ".36"}], "]"}], ",", 
+              RowBox[{"RGBColor", "[", 
+               RowBox[{".79", ",", ".71", ",", ".26"}], "]"}]}], "}"}]}], 
+           "}"}]}], "}"}]}], ",", 
+       RowBox[{"ImageSize", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{"400", ",", "300"}], "}"}]}], ",", 
+       RowBox[{"PlotLabel", "\[Rule]", 
+        RowBox[{"Style", "[", 
+         RowBox[{
+          RowBox[{"Text", "@", 
+           RowBox[{"Row", "[", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"TraditionalForm", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"HoldForm", "[", 
+                   RowBox[{
+                    SubsuperscriptBox["\[Integral]", 
+                    RowBox[{"-", "1"}], "1"], 
+                    RowBox[{"ff", " ", 
+                    RowBox[{"\[DifferentialD]", " ", "x"}]}]}], "]"}], "/.", 
+                  RowBox[{"ff", "\[Rule]", "f"}]}], "/.", 
+                 RowBox[{"mm", "\[Rule]", "m"}]}], "/.", 
+                RowBox[{"nn", "\[Rule]", "n"}]}], "]"}], ",", "\"\< = \>\"", 
+              ",", 
+              RowBox[{"Chop", "@", 
+               RowBox[{"Integrate", "[", 
+                RowBox[{"f", ",", 
+                 RowBox[{"{", 
+                  RowBox[{"x", ",", 
+                   RowBox[{"-", "1"}], ",", "1"}], "}"}]}], "]"}]}]}], "}"}], 
+            "]"}]}], ",", "16"}], "]"}]}]}], "]"}]}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"choice", ",", "1", ",", "\"\<\>\""}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"1", "\[Rule]", "\"\<sine\[Hyphen]sine\>\""}], ",", 
+        RowBox[{"2", "\[Rule]", "\"\<cosine\[Hyphen]cosine\>\""}], ",", 
+        RowBox[{"3", "\[Rule]", "\"\<sine\[Hyphen]cosine\>\""}]}], "}"}]}], 
+     "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"m", ",", "1"}], "}"}], ",", "1", ",", "10", ",", "1", ",", 
+      RowBox[{"ImageSize", "\[Rule]", "Medium"}], ",", 
+      RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"n", ",", "1"}], "}"}], ",", "1", ",", "10", ",", "1", ",", 
+      RowBox[{"Appearance", "\[Rule]", "\"\<Labeled\>\""}]}], "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"TrackedSymbols", "\[RuleDelayed]", 
+     RowBox[{"{", 
+      RowBox[{"n", ",", "m", ",", "L", ",", "choice"}], "}"}]}]}], "]"}], 
+  "               ", 
+  RowBox[{"(*", " ", 
+   RowBox[{
+   "This", " ", "Manipulate", " ", "section", " ", "and", " ", "the", " ", 
+    "text", " ", "below", " ", "is", " ", "copied", " ", "from", " ", "the", 
+    " ", "Project", " ", "OrthogonalityOfSinesAndCosines", " ", "from", " ", 
+    "the", " ", "Mathematica", " ", "Demonstration", " ", "Project"}], 
+   "*)"}]}]], "Input",
+ CellChangeTimes->{{3.728736149596891*^9, 3.7287361549480886`*^9}, {
+  3.728736233434373*^9, 3.728736283191663*^9}, {3.728737282092889*^9, 
+  3.7287372867551107`*^9}},ExpressionUUID->"2ed3928c-69b8-4cb8-a80a-\
+6a911e6d4c2a"],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`choice$$ = 1, $CellContext`m$$ = 
+    1, $CellContext`n$$ = 1, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{{
+       Hold[$CellContext`choice$$], 1, ""}, {
+      1 -> "sine\[Hyphen]sine", 2 -> "cosine\[Hyphen]cosine", 3 -> 
+       "sine\[Hyphen]cosine"}}, {{
+       Hold[$CellContext`m$$], 1}, 1, 10, 1}, {{
+       Hold[$CellContext`n$$], 1}, 1, 10, 1}}, Typeset`size$$ = {
+    400., {148., 152.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
+    Typeset`skipInitDone$$ = True, $CellContext`choice$16608$$ = 
+    False, $CellContext`m$16609$$ = 0, $CellContext`n$16610$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, 
+      "Variables" :> {$CellContext`choice$$ = 1, $CellContext`m$$ = 
+        1, $CellContext`n$$ = 1}, "ControllerVariables" :> {
+        Hold[$CellContext`choice$$, $CellContext`choice$16608$$, False], 
+        Hold[$CellContext`m$$, $CellContext`m$16609$$, 0], 
+        Hold[$CellContext`n$$, $CellContext`n$16610$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, 
+      "Body" :> ($CellContext`f = 
+        Switch[$CellContext`choice$$, 1, 
+          Sin[($CellContext`m$$ Pi) $CellContext`x] 
+          Sin[($CellContext`n$$ Pi) $CellContext`x], 2, 
+          Cos[($CellContext`m$$ Pi) $CellContext`x] 
+          Cos[($CellContext`n$$ Pi) $CellContext`x], 3, 
+          Sin[($CellContext`m$$ Pi) $CellContext`x] 
+          Cos[($CellContext`n$$ Pi) $CellContext`x]]; 
+       Plot[$CellContext`f, {$CellContext`x, -1, 1}, PlotStyle -> {Thick, 
+           RGBColor[0.88, 0.63, 0.23]}, Filling -> {1 -> {Axis, {
+              RGBColor[0.6, 0.73, 0.36], 
+              RGBColor[0.79, 0.71, 0.26]}}}, ImageSize -> {400, 300}, 
+         PlotLabel -> Style[
+           Text[
+            Row[{
+              TraditionalForm[
+               ReplaceAll[
+                ReplaceAll[
+                 ReplaceAll[
+                  HoldForm[
+                   
+                   Integrate[$CellContext`ff, {$CellContext`x, -1, 
+                    1}]], $CellContext`ff -> $CellContext`f], $CellContext`mm -> \
+$CellContext`m$$], $CellContext`nn -> $CellContext`n$$]], " = ", 
+              Chop[
+               Integrate[$CellContext`f, {$CellContext`x, -1, 1}]]}]], 16]]), 
+      "Specifications" :> {{{$CellContext`choice$$, 1, ""}, {
+         1 -> "sine\[Hyphen]sine", 2 -> "cosine\[Hyphen]cosine", 3 -> 
+          "sine\[Hyphen]cosine"}}, {{$CellContext`m$$, 1}, 1, 10, 1, 
+         ImageSize -> Medium, Appearance -> 
+         "Labeled"}, {{$CellContext`n$$, 1}, 1, 10, 1, Appearance -> 
+         "Labeled"}}, 
+      "Options" :> {
+       TrackedSymbols :> {$CellContext`n$$, $CellContext`m$$, $CellContext`L, \
+$CellContext`choice$$}}, "DefaultOptions" :> {}],
+     ImageSizeCache->{445., {219., 225.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{
+  3.7287361467280893`*^9},ExpressionUUID->"0a0be612-d2b4-4718-a6e5-\
+f1f42ba2dc98"]
+}, Open  ]],
+
+Cell["\<\
+This Demonstration shows the orthogonality of sines and cosines. \
+\>", "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.499729764640625*^9, 3.49972980840625*^9}, {
+   3.499729919671875*^9, 3.499730011375*^9}, {3.4997300520625*^9, 
+   3.4997301093125*^9}, {3.499730476734375*^9, 3.499730498734375*^9}},
+ CellID->73441810,ExpressionUUID->"3295c790-4989-424f-9dee-370d23aa3ced"],
+
+Cell[TextData[{
+ "For any ",
+ Cell[BoxData[
+  FormBox["m", TraditionalForm]], "InlineMath",ExpressionUUID->
+  "1fea3bbe-818d-48f2-9d25-17d41b86d83b"],
+ " and ",
+ Cell[BoxData[
+  FormBox["n", TraditionalForm]], "InlineMath",ExpressionUUID->
+  "ac8e9a20-5b3e-4756-9c96-60364064c8b6"],
+ ","
+}], "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.499730949328125*^9, 3.4997309623125*^9}},
+ CellID->550264855,ExpressionUUID->"a5e04983-fb10-4f40-aaf7-2b8b95c23d97"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      RowBox[{"-", "L"}], "L"], 
+     RowBox[{
+      RowBox[{"sin", "(", 
+       FractionBox[
+        RowBox[{"m", " ", "\[Pi]", " ", "x"}], "L"], ")"}], 
+      RowBox[{"cos", "(", 
+       FractionBox[
+        RowBox[{"n", " ", "\[Pi]", " ", "x"}], "L"], ")"}], "d", 
+      "\[InvisibleSpace]", "x"}]}], "=", "0"}], TraditionalForm]], 
+  "InlineMath",ExpressionUUID->"77d8bdfd-5cff-4ac9-9f80-c49eb0b71e1a"],
+ "."
+}], "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.499729764640625*^9, 3.49972980840625*^9}, {
+   3.499729919671875*^9, 3.499730011375*^9}, {3.4997300520625*^9, 
+   3.4997301093125*^9}, {3.499730476734375*^9, 3.49973054234375*^9}, {
+   3.499730581421875*^9, 3.49973059353125*^9}, {3.499730642328125*^9, 
+   3.499730680921875*^9}, {3.4997309715625*^9, 3.499730972421875*^9}},
+ CellID->49602607,ExpressionUUID->"c1afa222-4800-47b3-a4bc-302e9d2257ce"],
+
+Cell[TextData[{
+ "For ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"m", "\[NotEqual]", "n"}], TraditionalForm]], "InlineMath",
+  ExpressionUUID->"97999a8e-18fa-4ba1-ad02-44c4b1bdb511"],
+ ","
+}], "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.499729764640625*^9, 3.49972980840625*^9}, {
+   3.499729919671875*^9, 3.499730011375*^9}, {3.4997300520625*^9, 
+   3.4997301093125*^9}, {3.499730476734375*^9, 3.499730512734375*^9}},
+ CellID->604861942,ExpressionUUID->"b7b2cf65-d4d5-47ae-9f82-082734a7ed85"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      RowBox[{"-", "L"}], "L"], 
+     RowBox[{
+      RowBox[{"sin", "(", 
+       FractionBox[
+        RowBox[{"m", " ", "\[Pi]", " ", "x"}], "L"], ")"}], 
+      RowBox[{"sin", "(", 
+       FractionBox[
+        RowBox[{"n", " ", "\[Pi]", " ", "x"}], "L"], ")"}], "d", 
+      "\[InvisibleSpace]", "x"}]}], "=", "0"}], TraditionalForm]], 
+  "InlineMath",ExpressionUUID->"56ff9b7c-81ff-417e-8691-d2ae95ba1d7b"],
+ ","
+}], "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.499729764640625*^9, 3.49972980840625*^9}, {
+   3.499729919671875*^9, 3.499730011375*^9}, {3.4997300520625*^9, 
+   3.4997301093125*^9}, {3.499730476734375*^9, 3.4997305408125*^9}, {
+   3.499730675578125*^9, 3.499730677546875*^9}},
+ CellID->624553476,ExpressionUUID->"45eeab79-f38d-4791-8469-88849f7008e3"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      RowBox[{"-", "L"}], "L"], 
+     RowBox[{
+      RowBox[{"cos", "(", 
+       FractionBox[
+        RowBox[{"m", " ", "\[Pi]", " ", "x"}], "L"], ")"}], 
+      RowBox[{"cos", "(", 
+       FractionBox[
+        RowBox[{"n", " ", "\[Pi]", " ", "x"}], "L"], ")"}], "d", 
+      "\[InvisibleSpace]", "x"}]}], "=", "0"}], TraditionalForm]], 
+  "InlineMath",ExpressionUUID->"24f79849-7f5f-481a-baf2-485acf26af5d"],
+ "."
+}], "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.499729764640625*^9, 3.49972980840625*^9}, {
+   3.499729919671875*^9, 3.499730011375*^9}, {3.4997300520625*^9, 
+   3.4997301093125*^9}, {3.499730476734375*^9, 3.49973054234375*^9}, {
+   3.499730581421875*^9, 3.49973061109375*^9}, {3.49973064615625*^9, 
+   3.499730697515625*^9}},
+ CellID->167210777,ExpressionUUID->"1bff3384-effc-4dbd-a705-aa3ab780a405"],
+
+Cell[TextData[{
+ "For ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"m", "=", "n"}], TraditionalForm]], "InlineMath",ExpressionUUID->
+  "aa7ae9f6-5bce-45cb-ab87-a539eb0a2642"],
+ ","
+}], "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.4997307024375*^9, 3.499730713328125*^9}},
+ CellID->614062744,ExpressionUUID->"37c23e26-bc01-454b-b97d-01fdc3cc0fd5"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      RowBox[{"-", "L"}], "L"], 
+     RowBox[{
+      RowBox[{
+       SuperscriptBox["sin", "2"], "(", 
+       FractionBox[
+        RowBox[{"m", " ", "\[Pi]", " ", "x"}], "L"], ")"}], "d", 
+      "\[InvisibleSpace]", "x"}]}], "=", "L"}], TraditionalForm]], 
+  "InlineMath",ExpressionUUID->"afce54c3-0148-4a7a-9336-d2da9b0f09d2"],
+ ","
+}], "Text",
+ CellChangeTimes->{
+  3.35696210375764*^9, {3.499729764640625*^9, 3.49972980840625*^9}, {
+   3.499729919671875*^9, 3.499730011375*^9}, {3.4997300520625*^9, 
+   3.4997301093125*^9}, {3.499730476734375*^9, 3.49973054234375*^9}, {
+   3.499730581421875*^9, 3.4997306295625*^9}, {3.499730728984375*^9, 
+   3.4997307671875*^9}, 3.499731241390625*^9},
+ CellID->105032939,ExpressionUUID->"261bbc50-e5d0-4b95-a42f-ee4e44d5cd2e"],
+
+Cell["\<\
+You can see that harmonics of Sins and Cosines (where frequency is the \
+integer multiple of the fundamental frequency) are orthogonal to each other \
+for the interval 2Pi. Remember that  three orthogonal vectors x, y, and z \
+formed a complete basis in the 3-D vector space so that you could express any \
+other vector as a unique linear combination of x, y, and z. You can ask the \
+similar question here - do Sines and Cosines form a complete basis of the \
+space of continuous signals? If they do, you should be able to decompose any \
+\[OpenCurlyDoubleQuote]well -behaved\[CloseCurlyDoubleQuote] signal into a \
+linear combination of the basis functions. How many basis functions you will \
+need? Without getting into details, if you consider signals as infinite \
+dimension vectors, you will probably need infinity of them.   \
+\>", "Text",
+ CellChangeTimes->{{3.728478355872375*^9, 3.728478423570746*^9}, {
+  3.728481402515728*^9, 3.728481403363809*^9}, {3.728481471161429*^9, 
+  3.728481476020783*^9}, {3.728481677827889*^9, 3.728481866128769*^9}, {
+  3.728482199778728*^9, 3.7284823370030107`*^9}, {3.728482521370405*^9, 
+  3.728482549361732*^9}, {3.728652387609172*^9, 3.728652457747322*^9}, {
+  3.72865986919137*^9, 3.7286599069589663`*^9}, {3.728660267413706*^9, 
+  3.728660313803171*^9}, {3.785011567107645*^9, 3.7850115933932457`*^9}},
+ FontSize->24,ExpressionUUID->"116bd06d-d7b6-4e43-8b01-c5e11acee8a8"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["2. Fourier Analysis", "Chapter",
+ CellChangeTimes->{{3.727540216291003*^9, 3.727540230193316*^9}, {
+  3.727795664206171*^9, 3.7277956659118853`*^9}},
+ FontSize->24,ExpressionUUID->"76bc4415-0c02-4df1-972b-fa2c53f46d26"],
+
+Cell[CellGroupData[{
+
+Cell["2.1 Continuous time periodic signal", "Subsection",
+ CellChangeTimes->{{3.7281712130192413`*^9, 3.7281712253789473`*^9}, {
+  3.728217137673997*^9, 3.728217137914225*^9}},
+ FontSize->24,ExpressionUUID->"9c82157f-082b-423c-9dae-4798ff1b3ae2"],
+
+Cell[TextData[{
+ "Please be careful of notations in this field - you will see different \
+formulas depending on how frequency  (angular in radians per second or linear \
+in cycles per second) and period are captured, and how different functions \
+were normalized. I will highlight some of these in my lectures in workshops, \
+but in my experience you often get used to one set of conventions and it \
+takes time to migrate from one set of conventions to another. \n\nAs \
+highlighted above, we can extend the idea of decomposing a vector into a \
+linear combination of orthogonal basis vectors to functions (that can be \
+viewed as infinite dimension vectors). This is what Fourier series do. It \
+expresses an arbitrary periodic function F as a linear combination of \
+orthogonal basis functions (also called pure harmonics). As an aside, \
+remember from your highschool geometry that you can construct many different \
+bases (how many for a finite dimensional vector space?). Extending this \
+knowledge from vector space, you might ask yourself is Fourier basis the only \
+possible  decomposition or can we have other orthogonal decompositions too.  \
+\n\nThe Fourier Series represents a periodic function with period T as \
+follows. \n\nf(t) = ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["A", "0"], "+", " ", 
+    RowBox[{
+     UnderoverscriptBox["\[Sum]", 
+      RowBox[{"k", "=", "1"}], "\[Infinity]"], 
+     SubscriptBox["A", "k"]}]}], TraditionalForm]],ExpressionUUID->
+  "ea3c2222-7440-4b16-b7b7-601fea9e8edd"],
+ "*Sin",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}], " ", "+", " ", 
+    RowBox[{
+     UnderoverscriptBox["\[Sum]", 
+      RowBox[{"k", "=", "1"}], "\[Infinity]"], 
+     SubscriptBox["B", "k"]}]}], TraditionalForm]],ExpressionUUID->
+  "432bed13-a48f-49e5-b309-12e0128e61d7"],
+ "*Cos",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]],ExpressionUUID->
+  "9a3fb94c-2fff-45a1-b140-963c86504025"],
+ " ------- (1)\n\nHere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[Omega]", "0"], "is", " ", "the", " "}], TraditionalForm]],
+  ExpressionUUID->"f0605a1d-7f03-43f5-9207-e7f46874f82a"],
+ "fundamental frequency such that ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["\[Omega]", "0"], TraditionalForm]],ExpressionUUID->
+  "1e49bb01-c3b9-4268-a8b6-a8032d405710"],
+ "= ",
+ Cell[BoxData[
+  FormBox[
+   FractionBox[
+    RowBox[{"2", "*", "\[Pi]"}], "T"], TraditionalForm]],ExpressionUUID->
+  "7d7c95d7-f811-4ada-86cc-3bde53b9ed8c"],
+ "= 2*\[Pi] * f0 and k is positive integer. In many books you will see \
+2*\[Pi] * f instead of ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["\[Omega]", "0"], ".", "  ", 
+     StyleBox["I",
+      FontSlant->"Plain"]}], " ", "find", " ", "notations", " ", "with", " ", 
+    "angular", " ", "frequency", " "}], TraditionalForm]],ExpressionUUID->
+  "8a155762-4a4e-479c-a62b-3ba1acbfafca"],
+ "more compact. However, frequency cycles have a more direct interpretation \
+in applied contexts. Sometimes when the context demand I will switch to using \
+f instead of angular frequency. In more general cases you might see period \
+defined as L = b - a. Sometimes, you will also see period normalized to 1. \
+Note here that the harmonics (I have a feeling that engineering students \
+might find this term more familiar) are estimated with respect to the \
+fundamental frequency i.e. they are integer multiple of the fundamental.\n\n\
+In order to successfully decompose f(t), we need to estimate the coefficients \
+",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["A", "0"], TraditionalForm]],ExpressionUUID->
+  "c5fc0593-39ff-472f-b0e8-3609947f5762"],
+ ",  ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["A", "k"], TraditionalForm]],ExpressionUUID->
+  "33d2f615-da88-4b44-a9b7-84f64bd38c6b"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["B", "k"], "s"}], TraditionalForm]],ExpressionUUID->
+  "47938397-f228-436b-b131-345965cc0288"],
+ "\nLet us say we want to estimate the coefficient ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["A", "k"], TraditionalForm]],ExpressionUUID->
+  "73d8a621-12e3-4198-b8cc-100f181c15dd"],
+ " for k = m. Separate the relevant coefficient and rewrite the equation \
+above. \n\nf(t) = ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["A", "0"], "+", " ", 
+    RowBox[{
+     UnderoverscriptBox["\[Sum]", 
+      RowBox[{"k", "=", "1"}], 
+      RowBox[{"m", "-", "1"}]], 
+     SubscriptBox["A", "k"]}]}], TraditionalForm]],ExpressionUUID->
+  "d1713963-ce08-4efb-b2c6-ec86c47b31d2"],
+ "*Sin",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{" ", 
+    RowBox[{
+     RowBox[{"[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}], "]"}], " ", "+", 
+     " ", 
+     RowBox[{
+      SubscriptBox["A", "m"], "*", 
+      RowBox[{"Sin", " ", "[", 
+       RowBox[{
+        SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], " ", "]"}], " ", 
+      
+      UnderoverscriptBox[
+       RowBox[{"+", " ", "\[Sum]"}], 
+       RowBox[{"k", "=", 
+        RowBox[{"m", "+", "1"}]}], "\[Infinity]"], 
+      SubscriptBox["A", "k"], "*", 
+      RowBox[{"Sin", " ", "[", 
+       RowBox[{
+        SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}], "]"}]}], " ", 
+     "+", " ", 
+     RowBox[{
+      UnderscriptBox["\[Sum]", 
+       RowBox[{"k", "=", "1"}]], 
+      SubscriptBox["B", "k"]}]}]}], TraditionalForm]],ExpressionUUID->
+  "2649aac8-abf5-4c5c-9cd6-edfa3e5d62af"],
+ "*Cos [",
+ Cell[BoxData[
+  RowBox[{
+   RowBox[{
+    SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}], "]"}]],
+  ExpressionUUID->"7e0a977b-06d2-4ca3-903c-bb7b94b20ba0"],
+ "\n\n",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["A", "m"], "*", 
+   RowBox[{"Sin", "[", 
+    RowBox[{
+     SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}]}]}]],ExpressionUUID->
+  "27692b92-e7f9-430d-865e-5e93262f88dc"],
+ "] = ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "(", "t", ")"}], " ", "-", "  ", 
+    RowBox[{"[", 
+     RowBox[{
+      SubscriptBox["A", "0"], "+", " ", 
+      RowBox[{
+       UnderoverscriptBox["\[Sum]", 
+        RowBox[{"k", "=", "1"}], 
+        RowBox[{"m", "-", "1"}]], 
+       SubscriptBox["A", "k"]}]}]}]}], TraditionalForm]],ExpressionUUID->
+  "17ec17a4-dbcd-4919-96f1-acc2803a4117"],
+ "*Sin",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " ", 
+     UnderoverscriptBox[
+      RowBox[{"+", " ", "\[Sum]"}], 
+      RowBox[{"k", "=", 
+       RowBox[{"m", "+", "1"}]}], "\[Infinity]"], 
+     SubscriptBox["A", "k"], "*", "Sin", 
+     SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}], " ", "+", " ", 
+    RowBox[{
+     UnderscriptBox["\[Sum]", 
+      RowBox[{"k", "=", "1"}]], 
+     SubscriptBox["B", "k"]}]}], TraditionalForm]],ExpressionUUID->
+  "49dcb9a2-5aa7-40c8-8f35-8cf0676298fa"],
+ "*Cos",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]],ExpressionUUID->
+  "d4b01db4-0aed-4830-b036-0c271fce0fcf"],
+ "]\nThis is a formidable equation to estimate Am. But, we can now take \
+advantage of the fact that inner product of two orthogonal functions is zero. \
+To do so, multiply both sides by  ",
+ Cell[BoxData[
+  RowBox[{"Sin", "[", 
+   RowBox[{
+    SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}]],
+  ExpressionUUID->"353a7754-90b6-4cf0-b147-b7f1cd57855f"],
+ " and integrate over -T/2 to T/2 (or zero to 2Pi), remembering that integral \
+of a sum in the sum of the integral (there are no convergence issues in our \
+world). \n\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     SubscriptBox["A", "m"], 
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], " ", "*", 
+     " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "825c1f5e-cfa5-4587-884f-893e9bc798b9"],
+ " = ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     RowBox[{"f", "(", "t", ")"}], " ", "*", " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "374c1d6a-ced3-420a-b414-d07c7832283b"],
+ " - ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["A", "0"], TraditionalForm]],ExpressionUUID->
+  "283fafa2-5bef-4714-86a4-c796c99b9480"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "8080483c-cad5-406a-a3de-f6c405c1eca5"],
+ " + All other terms have two functions that are orthogonal to each other. \n",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["A", "m"], TraditionalForm]],ExpressionUUID->
+  "479e8f7e-1e15-420b-bb51-6528723ef9fb"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], " ", "*", 
+     " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "41e02d5a-4c88-4eb7-bcb5-e8a4b19ff16b"],
+ " = ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     RowBox[{"f", "(", "t", ")"}], " ", "*", " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "4666c452-36ff-4bf1-9d00-7c1c823ca1ea"],
+ " - ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["A", "0"], TraditionalForm]],ExpressionUUID->
+  "2261d7bc-4959-4adc-b832-3b09b83954fc"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "325d4274-85f6-4934-9454-4158762f1ade"],
+ " \n\n ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["A", "m"], TraditionalForm]],ExpressionUUID->
+  "c986f069-41cd-4706-9535-2a2e8eaf7516"],
+ " =  ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     RowBox[{"f", "(", "t", ")"}], " ", "*", " ", 
+     RowBox[{"Sin", "[", 
+      RowBox[{
+       SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}], "]"}], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "f32479a4-9405-494f-8fe9-4652ddea0fc5"],
+ "\n\nWhat if your signal only exist for a finite interval of \
+\[OpenCurlyQuote]t\[CloseCurlyQuote] and is zero outside of this. You can \
+impose periodicity on the signal i.e. impose extra structure that allows you \
+to carry out the Fourier series expansion. Compare what you learned here with \
+what you did above while plotting linear combinations of sins and cosines. "
+}], "Text",
+ CellChangeTimes->{{3.7275402390034437`*^9, 3.7275402694233637`*^9}, {
+   3.727540350166369*^9, 3.7275404328425837`*^9}, {3.727540529388126*^9, 
+   3.727540607107584*^9}, {3.727543552236129*^9, 3.727543606844976*^9}, {
+   3.727617241977449*^9, 3.7276172950404167`*^9}, {3.727617633934066*^9, 
+   3.727617638628972*^9}, {3.727623419593236*^9, 3.727623532505013*^9}, {
+   3.727624276034554*^9, 3.7276242847202587`*^9}, {3.727624362553193*^9, 
+   3.7276244409180117`*^9}, {3.727624515850265*^9, 3.7276245953808393`*^9}, {
+   3.727624712663889*^9, 3.727624843282483*^9}, {3.7276248941984243`*^9, 
+   3.727624999401045*^9}, {3.7276250333950377`*^9, 3.72762510775851*^9}, {
+   3.7276251379737864`*^9, 3.727625158660932*^9}, {3.727626396862267*^9, 
+   3.727626429703925*^9}, {3.7277119757441874`*^9, 3.727712040893962*^9}, {
+   3.727712192610117*^9, 3.7277124092527113`*^9}, {3.727712455618445*^9, 
+   3.72771250357045*^9}, {3.727713071139638*^9, 3.727713407725576*^9}, {
+   3.727713758071763*^9, 3.7277137691902447`*^9}, {3.7277138029336367`*^9, 
+   3.727713833681438*^9}, {3.7277138762044077`*^9, 3.7277138778683977`*^9}, {
+   3.727715132214383*^9, 3.72771520291987*^9}, {3.727795158584416*^9, 
+   3.7277951600937653`*^9}, {3.727795227638179*^9, 3.727795229208441*^9}, {
+   3.7277952665998487`*^9, 3.727795333541057*^9}, {3.727795841301313*^9, 
+   3.727795893673739*^9}, {3.727795933925572*^9, 3.727796037009986*^9}, {
+   3.7278686735745163`*^9, 3.727868719896887*^9}, {3.72787069514704*^9, 
+   3.7278707057697153`*^9}, {3.7278707919747677`*^9, 3.72787079366381*^9}, {
+   3.727873627694874*^9, 3.727873628646428*^9}, {3.727873690724594*^9, 
+   3.727873709427039*^9}, 3.728045296558983*^9, {3.728170615191627*^9, 
+   3.728170633970275*^9}, 3.728171160445166*^9, {3.728216898302395*^9, 
+   3.728216900580489*^9}, {3.7282169453967123`*^9, 3.728216974340558*^9}, {
+   3.728227766521345*^9, 3.728227770947329*^9}, {3.728227804730256*^9, 
+   3.728227872676532*^9}, {3.7282279165692587`*^9, 3.728227919179851*^9}, {
+   3.728483036010621*^9, 3.728483121913186*^9}, {3.7284831770351543`*^9, 
+   3.728483193804339*^9}, {3.728483291414249*^9, 3.728483301361505*^9}, {
+   3.728504896267243*^9, 3.728504917362773*^9}, {3.7285805854500933`*^9, 
+   3.7285806020479193`*^9}, {3.728647558166149*^9, 3.728647669388081*^9}, {
+   3.7286481300025387`*^9, 3.728648148825739*^9}, {3.7286485630502367`*^9, 
+   3.728648567850135*^9}, {3.7286488668765297`*^9, 3.728648950478532*^9}, {
+   3.728650324024158*^9, 3.728650375633473*^9}, {3.7286505219570503`*^9, 
+   3.7286505685996647`*^9}, {3.728650608838078*^9, 3.7286506141736*^9}, {
+   3.728660956315888*^9, 3.72866097002837*^9}, {3.7286632509981337`*^9, 
+   3.72866326928374*^9}, {3.728763697103917*^9, 3.728763717927698*^9}, {
+   3.728763756320299*^9, 3.728763788855839*^9}},
+ FontSize->24,ExpressionUUID->"001a91af-0e0c-4e1b-98ec-f54663137487"],
+
+Cell["", "Text",
+ CellChangeTimes->{{3.727623888628015*^9, 3.7276239215781*^9}, 
+   3.728752758748281*^9},
+ FontSize->24,ExpressionUUID->"6ba72f09-acba-42d9-bc54-a7cad8d69596"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["2.2 Complex exponentials and Fourier series", "Section",
+ CellChangeTimes->{{3.727539872984325*^9, 3.727539872985579*^9}, {
+  3.727540029226819*^9, 3.72754004124934*^9}, {3.728665828229855*^9, 
+  3.7286658416258097`*^9}},
+ FontSize->24,ExpressionUUID->"1b3240a1-e088-4653-a32a-10dde60eac28"],
+
+Cell[TextData[{
+ "A complex number is defined as z = a+ i*b where i = ",
+ Cell[BoxData[
+  FormBox[
+   SqrtBox[
+    RowBox[{"-", "1"}]], TraditionalForm]],ExpressionUUID->
+  "833b5557-468f-47e7-a256-73950623e708"],
+ "; a is called the real part (Re(z)) and b the imaginary part (Im(z)). We \
+visualize complex numbers in a two-dimensional complex plane with x-axis as \
+the real and y-axis the imaginary axis. The complex number z can be \
+represented as an ordered pair of Cartesian coordinates (a, b).  The absolute \
+value (or the modulus) of a complex number ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"z", "=", 
+    RowBox[{"x", "+", 
+     RowBox[{"i", " ", "y"}]}]}], TraditionalForm]], "InlineMath",
+  ExpressionUUID->"7ab7fb0e-0a5a-43bf-84fb-65475aebe77f"],
+ " is defined by ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"abs", "(", "z", ")"}], "=", 
+    SqrtBox[
+     RowBox[{
+      SuperscriptBox["x", "2"], "+", 
+      SuperscriptBox["y", "2"]}]]}], TraditionalForm]], "InlineMath",
+  ExpressionUUID->"66bf9d2b-8116-4e55-8f1d-7ae3f75eafd3"],
+ ". \n\nA complex exponential is an exponential function with complex power \
+e.g. ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", "i\[Theta]"], TraditionalForm]],ExpressionUUID->
+  "1087856d-829d-4946-aec3-55828475bec8"],
+ ". By Euler\[CloseCurlyQuote]s identity (It has always puzzled me how one \
+can arrive at this identity, but there are proofs) we can write \n",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", "i\[Theta]"], TraditionalForm]],ExpressionUUID->
+  "647f8f89-3a63-4b57-bbaa-5f5f8a78951c"],
+ "= Cos[\[Theta]] + i Sin[\[Theta]]. For our purpose here we would like to \
+write this as ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", "i\[Omega]t"], TraditionalForm]],ExpressionUUID->
+  "40bf2d28-b5ff-4754-9159-d9076af8e139"],
+ "= Cos[\[Omega]t] + i Sin [\[Omega]t] if we use angular frequency OR ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["e", "i2\[Pi]ft"], " ", "=", " "}], TraditionalForm]],
+  ExpressionUUID->"dbd6ce96-c767-44ea-b31d-6f107a3d7022"],
+ "Cos[2\[Pi]ft] + i Sin [2\[Pi]ft] if we use cycles per unit time. The \
+complex exponential defined by ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", "i\[Omega]t"], TraditionalForm]],ExpressionUUID->
+  "5b64cefc-732f-4fb3-8282-5007cda042e0"],
+ "has its real part equal to Cos[\[Omega]t] and imaginary part Sin \
+[\[Omega]t]. So, this number can be represented as an ordered pair (Cos[\
+\[Omega]t], Sin [\[Omega]t]) in the complex plane. At any given instant \
+\[OpenCurlyQuote]t\[CloseCurlyQuote], the point (Cos[\[Omega]t], Sin \
+[\[Omega]t]) has a unique location in the complex plane. However, the \
+amplitude, or absolute value or modulus of this complex number is \
+\[LeftBracketingBar]",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", "i\[Omega]t"], TraditionalForm]],ExpressionUUID->
+  "af234f98-dd21-4541-b639-f0a16041ed88"],
+ "\[RightBracketingBar]= ",
+ Cell[BoxData[
+  FormBox[
+   SqrtBox[
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"Cos", "[", "\[Omega]t", "]"}], "2"], "+", 
+     SuperscriptBox[
+      RowBox[{"Sin", "[", "\[Omega]t", "]"}], "2"], " "}]], TraditionalForm]],
+  ExpressionUUID->"403fd2f6-3ea5-44e7-bf16-a1299c0a7aec"],
+ "= 1 for all \[OpenCurlyQuote]t\[CloseCurlyQuote]. Thus as time passes the \
+ordered pair (Cos[\[Omega]t], Sin [\[Omega]t]) traces a circle with radius \
+one. Look at the Matlab animation to understand this. \n\n",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", 
+    RowBox[{"i", 
+     SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}]], TraditionalForm]],
+  ExpressionUUID->"df78b6f7-eccd-4b9f-8c05-8fa45acb567b"],
+ "= Cos[",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]],ExpressionUUID->
+  "f90c38bc-3709-4c53-87e1-337da577b4f7"],
+ "] + i Sin [",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]],ExpressionUUID->
+  "374f8681-9a11-43b3-95a1-786642523a0d"],
+ "]  \n",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", 
+    RowBox[{
+     RowBox[{"-", "i"}], 
+     SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}]], TraditionalForm]],
+  ExpressionUUID->"b24ec17f-bc03-4f67-a380-8436236fad5f"],
+ "= Cos[",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]],ExpressionUUID->
+  "48382dc4-8845-46db-b6ec-f43ecf242cb6"],
+ "] - i Sin [",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]],ExpressionUUID->
+  "cbce111a-baf8-4162-8bef-ef9c60586129"],
+ "]\n\nUsing the above two, we can write Cos [",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}]],ExpressionUUID->
+  "a128c84f-a59a-40a1-950d-f1f55674d7e4"],
+ "] = ",
+ Cell[BoxData[
+  FormBox[
+   FractionBox[
+    RowBox[{
+     SuperscriptBox["e", 
+      RowBox[{"i", "*", 
+       SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]], "+", " ", 
+     SuperscriptBox["e", 
+      RowBox[{"i", "*", 
+       SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]]}], "2"], 
+   TraditionalForm]],ExpressionUUID->"191dbbae-8df0-4b8d-b7f0-96b49836682b"],
+ " and Sin [",
+ Cell[BoxData[
+  RowBox[{
+   SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}]],ExpressionUUID->
+  "80cd0962-e61d-421a-a090-f8016793f4b9"],
+ "] = ",
+ Cell[BoxData[
+  FormBox[
+   FractionBox[
+    RowBox[{
+     SuperscriptBox["e", 
+      RowBox[{"*", 
+       SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]], "-", " ", 
+     SuperscriptBox["e", 
+      RowBox[{"*", 
+       SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t", " "}]]}], 
+    RowBox[{"2", "i"}]], TraditionalForm]],ExpressionUUID->
+  "11cbc67b-b668-4cfe-8b44-8318e7648de8"],
+ ". With the help of these relationships and some algebraic manipulation, we \
+can re-write Equation (1) above using complex exponentials. However, I will \
+try and derive it here since it follows almost the same scheme and will be \
+useful for later parts of these notes. \n\nWe will use two important \
+relations about complex exponentials. \n\n",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", 
+    RowBox[{"i", 
+     SubscriptBox["\[Omega]", "0"], "*", "k", "*", "t"}]], TraditionalForm]],
+  ExpressionUUID->"c5ac0973-2570-40be-a187-5f3bfdc94716"],
+ " * ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", 
+    RowBox[{"i", 
+     SubscriptBox["\[Omega]", "0"], "*", "m", "*", "t"}]], TraditionalForm]],
+  ExpressionUUID->"ee4a4da6-547a-44b6-bcfd-a13453c0dd73"],
+ " = ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", 
+    RowBox[{"i", 
+     SubscriptBox["\[Omega]", "0"], "*", 
+     RowBox[{"(", 
+      RowBox[{"k", "+", "m"}], ")"}], "*", "t"}]], TraditionalForm]],
+  ExpressionUUID->"51a28fdd-da7f-4e58-995e-1552307f2d19"],
+ "  ------- (ii)\n\n",
+ Cell[BoxData[
+  RowBox[{
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     SuperscriptBox["e", 
+      RowBox[{
+       SubscriptBox["i\[Omega]", "0"], "*", "m", "*", "t"}]], "dt"}]}], " ", 
+   "=", " ", 
+   TagBox[GridBox[{
+      {"\[Piecewise]", GridBox[{
+         {"0", 
+          RowBox[{"k", "\[NotEqual]", "0"}]},
+         {"T", 
+          RowBox[{"k", "=", "0"}]}
+        },
+        AllowedDimensions->{2, Automatic},
+        Editable->True,
+        GridBoxAlignment->{
+         "Columns" -> {{Left}}, "ColumnsIndexed" -> {}, 
+          "Rows" -> {{Baseline}}, "RowsIndexed" -> {}},
+        GridBoxItemSize->{
+         "Columns" -> {{Automatic}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}},
+           "RowsIndexed" -> {}},
+        GridBoxSpacings->{"Columns" -> {
+            Offset[0.27999999999999997`], {
+             Offset[0.84]}, 
+            Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, 
+          "Rows" -> {
+            Offset[0.2], {
+             Offset[0.4]}, 
+            Offset[0.2]}, "RowsIndexed" -> {}},
+        Selectable->True]}
+     },
+     GridBoxAlignment->{
+      "Columns" -> {{Left}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+       "RowsIndexed" -> {}},
+     GridBoxItemSize->{
+      "Columns" -> {{Automatic}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+       "RowsIndexed" -> {}},
+     GridBoxSpacings->{"Columns" -> {
+         Offset[0.27999999999999997`], {
+          Offset[0.35]}, 
+         Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+         Offset[0.2], {
+          Offset[0.4]}, 
+         Offset[0.2]}, "RowsIndexed" -> {}}],
+    "Piecewise",
+    DeleteWithContents->True,
+    Editable->False,
+    SelectWithContents->True,
+    Selectable->False]}]],ExpressionUUID->
+  "be335a5a-e08f-4864-9f6a-c0ce537ed40e"],
+ "  -------(iii)\n\n The Fourier series expansion of a periodic function in \
+terms of its complex coefficient can be give by the following\n f(t) = ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    UnderoverscriptBox["\[Sum]", 
+     RowBox[{"k", "=", 
+      RowBox[{"-", "\[Infinity]"}]}], "\[Infinity]"], 
+    SubscriptBox["C", "k"]}], TraditionalForm]],ExpressionUUID->
+  "0ea18c85-23ce-4f36-9c70-74bb466d8016"],
+ " ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", 
+    RowBox[{
+     SubscriptBox["i\[Omega]", "0"], "*", "m", "*", "t"}]], TraditionalForm]],
+  ExpressionUUID->"68578275-ad09-46b5-ba9c-2a8cbfa02a0f"],
+ "\n \n Using (ii) and (iii) above and the scheme that we followed above we \
+can derive the value of ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["C", 
+    RowBox[{"k", "=", "r"}]], TraditionalForm]],ExpressionUUID->
+  "64b5d9e1-c719-4157-98b7-9e183ea4881a"],
+ ". As previously, multiply both sides by ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["e", 
+    RowBox[{
+     SubscriptBox["i\[Omega]", "0"], "*", "r", "*", "t"}]], TraditionalForm]],
+  ExpressionUUID->"cfe6b384-8b7a-4b08-93a3-c776310ae895"],
+ " and integrate over a period. Try to complete the following derivation.  \n \
+\n ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["\[Integral]", 
+     RowBox[{
+      RowBox[{"-", "T"}], "/", "2"}], 
+     RowBox[{"T", "/", "2"}]], 
+    RowBox[{
+     RowBox[{"f", "(", "t", ")"}], 
+     SuperscriptBox["e", 
+      RowBox[{
+       SubscriptBox["i\[Omega]", "0"], "*", "r", "*", "t"}]], 
+     RowBox[{"\[DifferentialD]", "t"}]}]}], TraditionalForm]],ExpressionUUID->
+  "21e14a48-7efe-4ef1-a1c4-8fcad44a7c18"],
+ " = ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["C", "k"], TraditionalForm]],ExpressionUUID->
+  "b36cca68-49ef-4c2e-9633-17f312c545da"],
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["e", 
+     RowBox[{
+      SubscriptBox["i\[Omega]", "0"], "*", "r", "*", "t"}]], "+"}], 
+   TraditionalForm]],ExpressionUUID->"d11d95ab-ba1e-4fdd-9a0e-67fa35faced7"],
+ "\n\nSpend some time understanding the meaning of positive and negative \
+frequency - think of a vector in complex plane that is rotating clock- and \
+counter clock-wise. For real signals, which is what we are interested in, the \
+magnitude of ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["C", "k"], TraditionalForm]],ExpressionUUID->
+  "7b543f89-97cf-4129-9cad-1efe3cc83eab"],
+ " for the ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["k", "th"], TraditionalForm]],ExpressionUUID->
+  "24c7c9e2-f464-4e9e-ab9a-41dad621a27e"],
+ "positive and negative frequencies are same. So, if you plot "
+}], "Text",
+ CellChangeTimes->{{3.727871314503866*^9, 3.7278713436701393`*^9}, {
+   3.727871374676795*^9, 3.727871452809617*^9}, {3.727871964559877*^9, 
+   3.727871974332197*^9}, {3.727872007946992*^9, 3.7278720805122747`*^9}, {
+   3.727873593203958*^9, 3.727873612685177*^9}, {3.7285772666468353`*^9, 
+   3.7285772763057203`*^9}, {3.728577571835875*^9, 3.728577719230323*^9}, {
+   3.728577749801303*^9, 3.7285778353043957`*^9}, {3.7285778687194643`*^9, 
+   3.728578034677672*^9}, {3.728578901964047*^9, 3.728579052694159*^9}, {
+   3.728579105047144*^9, 3.728579129759513*^9}, {3.728579207395145*^9, 
+   3.728579254479786*^9}, {3.72858037011652*^9, 3.728580378001134*^9}, {
+   3.728580690265341*^9, 3.728580822473762*^9}, {3.7285808743638*^9, 
+   3.728580922557692*^9}, {3.7285812445545807`*^9, 3.728581446145363*^9}, {
+   3.728587247087083*^9, 3.728587270499681*^9}, {3.728648261941633*^9, 
+   3.728648449644512*^9}, {3.7286485933637466`*^9, 3.7286486756577682`*^9}, {
+   3.728648716884879*^9, 3.728648738085153*^9}, {3.728661009094679*^9, 
+   3.7286610652799*^9}, {3.728663055713723*^9, 3.728663162712707*^9}, {
+   3.728663323698299*^9, 3.7286634195158157`*^9}, {3.728664032183461*^9, 
+   3.7286641887353573`*^9}, {3.7286651528834667`*^9, 3.728665631780295*^9}, {
+   3.728665740770159*^9, 3.7286657519609547`*^9}, {3.7286949779841633`*^9, 
+   3.728694980541987*^9}, 3.728753043289584*^9, {3.7288200054474497`*^9, 
+   3.728820124993843*^9}, {3.7288202123552427`*^9, 3.728820280833281*^9}, 
+   3.728820335232519*^9, {3.728820369171583*^9, 3.7288203723874197`*^9}, 
+   3.789078543970105*^9, 3.7890786820985622`*^9},
+ FontSize->24,ExpressionUUID->"b2baef16-facb-48b7-8836-c716b4f52e41"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1427, 849},
+WindowMargins->{{4, Automatic}, {0, Automatic}},
+FrontEndVersion->"12.0 for Mac OS X x86 (64-bit) (April 8, 2019)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[StyleDefinitions -> "Default.nb"]]}, Visible -> False, 
+  FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 
+  StyleDefinitions -> "PrivateStylesheetFormatting.nb"]
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 202, 2, 71, "Title",ExpressionUUID->"3a7b4e1b-9d71-4996-ae49-8511de48ba57"],
+Cell[785, 26, 4154, 63, 1100, "Text",ExpressionUUID->"3271327b-db70-49cc-9672-083e14ea2778"],
+Cell[CellGroupData[{
+Cell[4964, 93, 175, 2, 56, "Chapter",ExpressionUUID->"67bb774f-4f96-45e4-94f7-2eca96ef19da"],
+Cell[5142, 97, 958, 17, 216, "Text",ExpressionUUID->"3e5bf3e3-a4a3-44c2-8367-a1f301cfd133"],
+Cell[CellGroupData[{
+Cell[6125, 118, 254, 3, 62, "Section",ExpressionUUID->"94228a9b-47ab-4e9f-980a-1231f5c3f276"],
+Cell[6382, 123, 872, 13, 114, "Text",ExpressionUUID->"337620cb-842f-4b5a-b8eb-16bcc0c3be90"],
+Cell[CellGroupData[{
+Cell[7279, 140, 2112, 47, 67, "Code",ExpressionUUID->"32224db1-a7d3-420b-938e-51ca842b8729"],
+Cell[9394, 189, 1812, 38, 319, "Output",ExpressionUUID->"5cf886d4-9e3c-4ee8-bd7c-7924fd36dcca"]
+}, Open  ]],
+Cell[11221, 230, 931, 14, 148, "Text",ExpressionUUID->"55f27014-51fe-477d-8692-7b8212cfa3a3"],
+Cell[CellGroupData[{
+Cell[12177, 248, 2667, 55, 67, "Code",ExpressionUUID->"56a3ecd7-9950-4b1d-adf7-873d7b5b333c"],
+Cell[14847, 305, 2555, 50, 410, "Output",ExpressionUUID->"cf506569-b382-45dd-b58b-bc01557cd38c"]
+}, Open  ]],
+Cell[17417, 358, 1478, 22, 318, "Text",ExpressionUUID->"a0d9f87c-506b-49f7-8882-74c64152c55b"],
+Cell[18898, 382, 889, 15, 114, "Text",ExpressionUUID->"53c4665d-d304-405f-89d4-7a57332d6bcb"],
+Cell[19790, 399, 1403, 21, 44, "Input",ExpressionUUID->"193205ee-d6bb-49c2-9ead-39874fdb357d"],
+Cell[21196, 422, 2106, 33, 454, "Text",ExpressionUUID->"b2c0d713-c8ea-449f-a1bd-2b40a459baea"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[23339, 460, 302, 4, 62, "Section",ExpressionUUID->"4328c081-1be5-4b82-a735-5279d64a08db"],
+Cell[23644, 466, 6918, 121, 1527, "Text",ExpressionUUID->"7c70794c-c360-4725-821e-068cf73e8016"],
+Cell[CellGroupData[{
+Cell[30587, 591, 679, 15, 44, "Input",ExpressionUUID->"90cc711d-40ea-49c6-b024-87a78427000a"],
+Cell[31269, 608, 385, 6, 48, "Output",ExpressionUUID->"33a70ae9-2933-4ea2-bb5c-dd0307104b8d"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[31691, 619, 1034, 25, 44, "Input",ExpressionUUID->"a7e4e485-28e5-412e-bd12-d5ea3e713733"],
+Cell[32728, 646, 404, 7, 66, "Output",ExpressionUUID->"9eb04e1f-2fbf-4b52-bf82-a79dc7e1e1b4"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[33169, 658, 544, 14, 44, "Input",ExpressionUUID->"0d24be5e-f7ea-44f3-acac-2b683477dfac"],
+Cell[33716, 674, 211, 3, 48, "Output",ExpressionUUID->"86b22efe-4eda-4519-96b4-7e899bc1e915"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[33964, 682, 903, 18, 44, "Input",ExpressionUUID->"5c705f32-71e5-454d-b698-000f8b4b63d1"],
+Cell[34870, 702, 460, 7, 48, "Output",ExpressionUUID->"93f2388c-cc95-4459-a35d-ca903cbe116a"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[35367, 714, 4755, 117, 321, "Input",ExpressionUUID->"2ed3928c-69b8-4cb8-a80a-6a911e6d4c2a"],
+Cell[40125, 833, 3692, 76, 463, "Output",ExpressionUUID->"0a0be612-d2b4-4718-a6e5-f1f42ba2dc98"]
+}, Open  ]],
+Cell[43832, 912, 391, 7, 35, "Text",ExpressionUUID->"3295c790-4989-424f-9dee-370d23aa3ced",
+ CellID->73441810],
+Cell[44226, 921, 462, 13, 35, "Text",ExpressionUUID->"a5e04983-fb10-4f40-aaf7-2b8b95c23d97",
+ CellID->550264855],
+Cell[44691, 936, 974, 24, 40, "Text",ExpressionUUID->"c1afa222-4800-47b3-a4bc-302e9d2257ce",
+ CellID->49602607],
+Cell[45668, 962, 500, 12, 35, "Text",ExpressionUUID->"b7b2cf65-d4d5-47ae-9f82-082734a7ed85",
+ CellID->604861942],
+Cell[46171, 976, 881, 23, 40, "Text",ExpressionUUID->"45eeab79-f38d-4791-8469-88849f7008e3",
+ CellID->624553476],
+Cell[47055, 1001, 930, 24, 40, "Text",ExpressionUUID->"1bff3384-effc-4dbd-a705-aa3ab780a405",
+ CellID->167210777],
+Cell[47988, 1027, 350, 10, 35, "Text",ExpressionUUID->"37c23e26-bc01-454b-b97d-01fdc3cc0fd5",
+ CellID->614062744],
+Cell[48341, 1039, 871, 22, 40, "Text",ExpressionUUID->"261bbc50-e5d0-4b95-a42f-ee4e44d5cd2e",
+ CellID->105032939],
+Cell[49215, 1063, 1429, 20, 216, "Text",ExpressionUUID->"116bd06d-d7b6-4e43-8b01-c5e11acee8a8"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[50693, 1089, 225, 3, 56, "Chapter",ExpressionUUID->"76bc4415-0c02-4df1-972b-fa2c53f46d26"],
+Cell[CellGroupData[{
+Cell[50943, 1096, 246, 3, 59, "Subsection",ExpressionUUID->"9c82157f-082b-423c-9dae-4798ff1b3ae2"],
+Cell[51192, 1101, 14778, 375, 1504, "Text",ExpressionUUID->"001a91af-0e0c-4e1b-98ec-f54663137487"],
+Cell[65973, 1478, 176, 3, 46, "Text",ExpressionUUID->"6ba72f09-acba-42d9-bc54-a7cad8d69596"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[66186, 1486, 297, 4, 62, "Section",ExpressionUUID->"1b3240a1-e088-4653-a32a-10dde60eac28"],
+Cell[66486, 1492, 12894, 331, 1369, "Text",ExpressionUUID->"b2baef16-facb-48b7-8836-c716b4f52e41"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
